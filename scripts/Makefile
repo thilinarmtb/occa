@@ -183,7 +183,7 @@ ifeq ($(usingLinux),1)
   endif
 
   linkerFlags += -lm -lrt -ldl
-  soNameFlag = -Wl,-soname,libocca.so
+  soNameFlag = -Wl,-soname,$(PREFIX)/lib/libocca.so
   soExt = so
 
 else ifeq ($(usingMacOS),1)
@@ -191,7 +191,7 @@ else ifeq ($(usingMacOS),1)
 	OCCA_OS := OCCA_MACOS_OS
   flags += -Wno-deprecated-declarations
   linkerFlags += -framework accelerate -framework CoreServices
-  soNameFlag = -Wl,-install_name,@rpath/libocca.dylib
+  soNameFlag = -Wl,-install_name,$(PREFIX)/lib/libocca.dylib
   soExt = dylib
 
 else ifeq ($(usingWindows),1)
