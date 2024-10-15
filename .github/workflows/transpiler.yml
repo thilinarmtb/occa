@@ -24,7 +24,6 @@ jobs:
             CXXFLAGS: -Wno-maybe-uninitialized -Wno-cpp
             FC: gfortran-12
             OCCA_FORTRAN_ENABLED: 1
-            useCMake: true
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -42,32 +41,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: setup conda
-      uses: conda-incubator/setup-miniconda@v3
-      with:
-        auto-activate-base: false
-        activate-environment: "clang"
-        use-mamba: false
-
     - name: install clang version required for the transpiler
       shell: bash -el {0}
       run: |
-        conda install -c conda-forge clang=17.0.6
-        conda install -c conda-forge clangdev=17.0.6
-
-    - name: conda info/list
-      shell: bash -el {0}
-      run: |
-        conda info
-        conda list
-        echo "PREFIX: ${CONDA_PREFIX}"
-
-    - name: Compiler info
-      if: ${{ !matrix.useCMake }}
-      run: make -j 16 info
+        wget https://raw.githubusercontent.com/opencollab/llvm-jenkins.debian.net/master/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 17 all
 
     - name: CMake configure
-      if: ${{ matrix.useCMake }}
       shell: bash -el {0}
       run: |
         export CLANG_INSTALLED_PATH="${CONDA_PREFIX}"
@@ -81,14 +62,8 @@ jobs:
         -DOCCA_ENABLE_TESTS=ON \
         -DOCCA_ENABLE_EXAMPLES=ON \
         -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED} \
-        -DOCCA_CLANG_BASED_TRANSPILER=ON \
-        -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}/lib"
+        -DOCCA_CLANG_BASED_TRANSPILER=ON
 
     - name: CMake build
-      if: ${{ matrix.useCMake }}
       run: |
         cmake --build build --parallel 16
-
-    - name: Run examples
-      if: ${{ !matrix.useCMake }}
-      run: ./tests/run_examples
