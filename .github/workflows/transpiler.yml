@@ -49,8 +49,6 @@ jobs:
     - name: CMake configure
       shell: bash -el {0}
       run: |
-        export CLANG_INSTALLED_PATH="${CONDA_PREFIX}"
-
         cmake -S . -B build \
         -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
         -DCMAKE_INSTALL_PREFIX=install \
@@ -64,4 +62,4 @@ jobs:
 
     - name: CMake build
       run: |
-        cmake --build build --parallel 16
+        cmake --build build --parallel 8
