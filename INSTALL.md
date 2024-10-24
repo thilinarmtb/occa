@@ -72,14 +72,18 @@ $ cmake --build build --parallel <number-of-threads>
 When cross compiling for a different platform, the targeted hardware doesn't need to be available; however all dependencies&mdash;e.g., headers, libraries&mdash;must be present. Commonly this is the case for large HPC systems, where code is compiled on login nodes and run on compute nodes.
 
 
-#### Building with Clang transplier option
+#### Building with Clang transpiler
 
-The following example shows how to build OCCA with the new transpiler:
+Please refer [occa-transpiler README](https://github.com/libocca/occa-transpiler/blob/main/README.md) for instructions on how to
+build and install the occa-transpiler.
+Then you can use the following commands to install OCCA with occa-transpiler enabled.
+Please replace `<occa-transpiler install dir>` by the root directory of your
+occa-transpiler installation.
 
 ```shell
 $ mkdir build
 $ cd build
-$ cmake -DCMAKE_BUILD_TYPE=Release -DOCCA_CLANG_BASED_TRANSPILER=ON ..
+$ cmake -DCMAKE_BUILD_TYPE=Release -DOCCA_CLANG_BASED_TRANSPILER=ON -DCMAKE_PREFIX_PATH=<occa-transpiler install dir>/lib/cmake ..
 $ cmake --build . --parallel <number-of-threads> 
 $ cmake --install . --prefix install
 ```
