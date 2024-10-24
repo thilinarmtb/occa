@@ -10,7 +10,7 @@
 
 ### Optional
 
- - Fortan 90 compiler
+ - Fortran 90 compiler
  - CUDA 9 or later
  - HIP 3.5 or later
  - SYCL 2020 or later
@@ -22,7 +22,7 @@
 
 ### **Configure**
 
-OCCA uses the [CMake] build system. For convenience, the shell script `configure-cmake.sh` has been provided to drive the Cmake build. The following table gives a list of build parameters which are set in the file. To override the default value, it is only necessary to assign the variable an alternate value at the top of the script or at the commandline.
+OCCA uses the [CMake] build system. For convenience, the shell script `configure-cmake.sh` has been provided to drive the CMake build. The following table gives a list of build parameters which are set in the file. To override the default value, it is only necessary to assign the variable an alternate value at the top of the script or at the commandline.
 
 Example
 ```shell
