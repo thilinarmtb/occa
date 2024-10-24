@@ -1,4 +1,4 @@
-# INSTALLATION GUIDE 
+# INSTALLATION GUIDE
 
 ## Requirements
 
@@ -26,7 +26,7 @@ OCCA uses the [CMake] build system. For convenience, the shell script `configure
 Example
 ```shell
 $ CC=clang CXX=clang++ OCCA_ENABLE_OPENMP="OFF" ./configure-cmake.sh
-``` 
+```
 
 | Build Parameter | Description | Default |
 | --------- | ----------- | ------- |
@@ -34,7 +34,7 @@ $ CC=clang CXX=clang++ OCCA_ENABLE_OPENMP="OFF" ./configure-cmake.sh
 | INSTALL_DIR | Directory where OCCA should be installed | `./install` |
 | BUILD_TYPE | Optimization and debug level | `RelWithDebInfo` |
 | CXX | C++11 compiler | `g++` |
-| CXXFLAGS | C++ compiler flags | *empty* | 
+| CXXFLAGS | C++ compiler flags | *empty* |
 | CC | C11 compiler| `gcc` |
 | CFLAGS | C compiler flags | *empty* |
 | OCCA_ENABLE_CUDA | Enable use of the CUDA backend | `ON`|
@@ -67,7 +67,7 @@ After CMake configuration is complete, OCCA can be built with the command
 $ cmake --build build --parallel <number-of-threads>
 ```
 
-When cross compiling for a different platform, the targeted hardware doesn't need to be available; however all dependencies&mdash;e.g., headers, libraries&mdash;must be present. Commonly this is the case for large HPC systems, where code is compiled on login nodes and run on compute nodes.  
+When cross compiling for a different platform, the targeted hardware doesn't need to be available; however all dependencies&mdash;e.g., headers, libraries&mdash;must be present. Commonly this is the case for large HPC systems, where code is compiled on login nodes and run on compute nodes.
 
 ### Testing
 
@@ -86,7 +86,7 @@ Commandline installation of OCCA can be accomplished with the following:
 ```shell
 $ cmake --install BUILD_DIR --prefix INSTALL_DIR
 ```
-During installation, the [Env Modules](Env_Modules) file `INSTALL_DIR/modulefiles/occa` is generated. When this module is loaded, paths to the installed `bin`, `lib`, and `include` directories are appended to environment variables such as `PATH` and `LD_LIBRARY_PATH`. 
+During installation, the [Env Modules](Env_Modules) file `INSTALL_DIR/modulefiles/occa` is generated. When this module is loaded, paths to the installed `bin`, `lib`, and `include` directories are appended to environment variables such as `PATH` and `LD_LIBRARY_PATH`.
 To make use of this module, add the following to your `.modulerc` file
 ```
 module use -a INSTALL_DIR/modulefiles

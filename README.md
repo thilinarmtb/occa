@@ -5,7 +5,7 @@
 </p>
 &nbsp;
 
-<div align="center"> 
+<div align="center">
 
 [![license](https://img.shields.io/github/license/libocca/occa)](LICENSE)
 ![discussions](https://img.shields.io/github/discussions/libocca/occa)
@@ -19,7 +19,7 @@
 
 ## Performance, Portability, Transparency
 
-OCCA is an open source, portable, and vendor neutral framework for parallel programming on heterogeneous platforms. The OCCA API provides unified models for heterogeneous programming concepts&mdash;such as a device, memory, or kernel&mdash;while the OCCA Kernel Language (OKL) enables the creation of portable device kernels using a directive-based extension to the C-language. 
+OCCA is an open source, portable, and vendor neutral framework for parallel programming on heterogeneous platforms. The OCCA API provides unified models for heterogeneous programming concepts&mdash;such as a device, memory, or kernel&mdash;while the OCCA Kernel Language (OKL) enables the creation of portable device kernels using a directive-based extension to the C-language.
 
 Mission critical computational science and engineering applications from the public and private sectors rely on OCCA. Notable users include the U.S. Department of Energy and Shell.
 
@@ -51,9 +51,9 @@ Mission critical computational science and engineering applications from the pub
 
 ## Build, Test, Install
 
-OCCA uses the [CMake] build system. Checkout the [installation guide](INSTALL.md) for a comprehensive overview of all build settings and instructions for building on [Windows](INSTALL.md#windows) or [Mac OS](INSTALL.md#mac-os). 
+OCCA uses the [CMake] build system. Checkout the [installation guide](INSTALL.md) for a comprehensive overview of all build settings and instructions for building on [Windows](INSTALL.md#windows) or [Mac OS](INSTALL.md#mac-os).
 
-### Linux 
+### Linux
 
 For convenience, the shell script `configure-cmake.sh` has been provided to drive the CMake build. Compilers, flags, and other build parameters can be adjusted there. By default, this script uses `./build` and `./install` for the build and install directories.
 
@@ -65,7 +65,7 @@ $ ctest --test-dir build --output-on-failure
 $ cmake --install build --prefix install
 ```
 
-If dependencies are installed in a non-standard location, set the corresponding [environment variable](INSTALL.md#dependency-paths) to this path. 
+If dependencies are installed in a non-standard location, set the corresponding [environment variable](INSTALL.md#dependency-paths) to this path.
 
 
 ## Use
@@ -98,26 +98,26 @@ For example, calling `occa info` will available OCCA backends and related hardwa
 ```shell
 $ occa info
 ========+======================+=================================
- CPU(s) | Processor Name       | AMD EPYC 7532 32-Core Processor 
-        | Memory               | 251.6 GB                        
-        | Clock Frequency      | 2.4 MHz                         
-        | SIMD Instruction Set | SSE2                            
-        | SIMD Width           | 128 bits                        
-        | L1d Cache Size       |   1 MB                          
-        | L1i Cache Size       |   1 MB                          
-        | L2 Cache Size        |  16 MB                          
-        | L3 Cache Size        | 256 MB                          
+ CPU(s) | Processor Name       | AMD EPYC 7532 32-Core Processor
+        | Memory               | 251.6 GB
+        | Clock Frequency      | 2.4 MHz
+        | SIMD Instruction Set | SSE2
+        | SIMD Width           | 128 bits
+        | L1d Cache Size       |   1 MB
+        | L1i Cache Size       |   1 MB
+        | L2 Cache Size        |  16 MB
+        | L3 Cache Size        | 256 MB
 ========+======================+=================================
- OpenCL | Platform 0           | NVIDIA CUDA                     
+ OpenCL | Platform 0           | NVIDIA CUDA
         |----------------------+---------------------------------
-        | Device 0             | NVIDIA A100-PCIE-40GB           
-        | Device Type          | gpu                             
-        | Compute Cores        | 108                             
-        | Global Memory        | 39.40 GB                        
+        | Device 0             | NVIDIA A100-PCIE-40GB
+        | Device Type          | gpu
+        | Compute Cores        | 108
+        | Global Memory        | 39.40 GB
 ========+======================+=================================
- CUDA   | Device Name          | NVIDIA A100-PCIE-40GB           
-        | Device ID            | 0                               
-        | Memory               | 39.40 GB                        
+ CUDA   | Device Name          | NVIDIA A100-PCIE-40GB
+        | Device ID            | 0
+        | Memory               | 39.40 GB
 ========+======================+=================================
 ```
 
@@ -133,7 +133,7 @@ To provide feedback, start a conversation in the [general](https://github.com/li
 
 ## Acknowledgements
 
-This work was supported in part by 
+This work was supported in part by
 - Argonne Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC02-06CH11357
 - The Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy’s Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation’s exascale computing imperative
 - The Center for Efficient Exascale Discretizations (CEED), a co-design center within the U.S. Department of Energy Exascale Computing Project.
