@@ -54,6 +54,13 @@ jobs:
             useCMake: true
             useoneAPI: true
 
+          - name: "[MacOS] CMake + clang"
+            os: macos-14
+            CC: clang
+            CXX: clang++
+            CXXFLAGS: -Wno-uninitialized
+            useCMake: true
+
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
 
@@ -102,6 +109,7 @@ jobs:
         -DCMAKE_C_COMPILER=${CC} \
         -DCMAKE_CXX_COMPILER=${CXX} \
         -DCMAKE_Fortran_COMPILER=${FC} \
+        -DOCCA_ENABLE_METAL=OFF \
         -DOCCA_ENABLE_TESTS=ON \
         -DOCCA_ENABLE_EXAMPLES=ON \
         -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED}
@@ -119,6 +127,7 @@ jobs:
         -DCMAKE_C_COMPILER=${CC} \
         -DCMAKE_CXX_COMPILER=${CXX} \
         -DCMAKE_Fortran_COMPILER=${FC} \
+        -DOCCA_ENABLE_METAL=OFF \
         -DOCCA_ENABLE_TESTS=ON \
         -DOCCA_ENABLE_EXAMPLES=ON \
         -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED}
