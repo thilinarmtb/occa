@@ -2,15 +2,24 @@ name: Build
 
 on: 
   push:
+    branches: [development, main]
     paths-ignore:
       - 'README.md'
       - 'INSTALL.md'
       - 'docs/**'
   pull_request:
+    branches: [development, main]
     paths-ignore:
       - 'README.md'
       - 'INSTALL.md'
       - 'docs/**'
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled'
+        required: false
+        default: true
 
 jobs:
   run:
@@ -61,11 +70,12 @@ jobs:
             useCMake: true
             useoneAPI: true
 
-          - name: "[MacOS] clang"
-            os: macos-12
+          - name: "[MacOS] CMake + clang"
+            os: macos-14
             CC: clang
             CXX: clang++
             CXXFLAGS: -Wno-uninitialized
+            useCMake: true
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -83,6 +93,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3.13
+      if: ${{ inputs.debug_enabled }}
 
     - name: add oneAPI to apt
       if: ${{ matrix.useoneAPI }}
@@ -115,6 +129,7 @@ jobs:
         -DCMAKE_C_COMPILER=${CC} \
         -DCMAKE_CXX_COMPILER=${CXX} \
         -DCMAKE_Fortran_COMPILER=${FC} \
+        -DOCCA_ENABLE_METAL=OFF \
         -DOCCA_ENABLE_TESTS=ON \
         -DOCCA_ENABLE_EXAMPLES=ON \
         -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED}
@@ -132,6 +147,7 @@ jobs:
         -DCMAKE_C_COMPILER=${CC} \
         -DCMAKE_CXX_COMPILER=${CXX} \
         -DCMAKE_Fortran_COMPILER=${FC} \
+        -DOCCA_ENABLE_METAL=OFF \
         -DOCCA_ENABLE_TESTS=ON \
         -DOCCA_ENABLE_EXAMPLES=ON \
         -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED}
