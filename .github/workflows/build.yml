@@ -139,21 +139,21 @@ jobs:
         -DOCCA_ENABLE_EXAMPLES=ON \
         -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED}
     
-    - name: CMake build
+    - name: CMake build and install
       if: ${{ matrix.useCMake && !matrix.useoneAPI}}
       run: |
-        cmake --build build --parallel 16
+        cmake --build build --target install --parallel 16
 
-    - name: CMake build
+    - name: CMake build and install
       if: ${{ matrix.useCMake && matrix.useoneAPI}}
       env:
         OCCA_CC: ${{ matrix.CC }}
         OCCA_CXX: ${{ matrix.CXX }}
       run: |
         source /opt/intel/oneapi/setvars.sh
-        cmake --build build --parallel 16
+        cmake --build build --target install --parallel 16
 
-    - name: Compile library
+    - name: Compile library and install
       if: ${{ !matrix.useCMake }}
       run: make -j 16
 
