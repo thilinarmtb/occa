@@ -63,7 +63,7 @@ jobs:
             OCCA_COVERAGE: 0
             OCCA_FORTRAN_ENABLED: 1
             useCMake: true
-            useoneAPI: true
+            useoneAPI: 0
             useTranspiler: true
 
     runs-on: ${{ matrix.os }}
@@ -166,7 +166,7 @@ jobs:
         cmake --build build --parallel 16
 
     - name: Run CTests
-      if: ${{ matrix.useCMake}}
+      if: ${{ matrix.useCMake }}
       env:
         OCCA_DPCPP_COMPILER: icpx
       run: |
