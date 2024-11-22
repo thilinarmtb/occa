@@ -44,6 +44,7 @@ jobs:
             FC: gfortran
             OCCA_FORTRAN_ENABLED: 1
             useCMake: true
+            useTranspiler: true
 
           - name: "[Ubuntu] CMake + clang"
             os: ubuntu-latest
@@ -51,17 +52,19 @@ jobs:
             CXX: clang++
             CXXFLAGS: -Wno-uninitialized
             useCMake: true
+            useTranspiler: true
 
           - name: "[Ubuntu] CMake + Intel/LLVM"
             os: ubuntu-latest
-            CC: icx
-            CXX: icpx
+            CC: gcc
+            CXX: g++
             CXXFLAGS: -Wno-uninitialized
-            FC: ifx
+            FC: gfortran
             OCCA_COVERAGE: 0
             OCCA_FORTRAN_ENABLED: 1
             useCMake: true
             useoneAPI: true
+            useTranspiler: true
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -76,6 +79,9 @@ jobs:
       OCCA_COVERAGE: ${{ matrix.OCCA_COVERAGE }}
       OCCA_FORTRAN_ENABLED: ${{ matrix.OCCA_FORTRAN_ENABLED }}
       FORTRAN_EXAMPLES: ${{ matrix.OCCA_FORTRAN_ENABLED }}
+      TRANSPILER_VERSION: 1.1
+      TRANSPILER_CACHE_NUMBER: 0 # Increase to reset cache manually.
+
 
     steps:
     - uses: actions/checkout@v4
@@ -84,7 +90,16 @@ jobs:
       uses: mxschmitt/action-tmate@v3.13
       if: ${{ inputs.debug_enabled }}
 
-    - name: add oneAPI to apt
+    - name: Setup environment variables for oneAPI
+      if: ${{ matrix.useoneAPI }}
+      run: echo "USE_ONEAPI=1" >> ${GITHUB_ENV}
+
+    - name: Setup environment variables for transpiler
+      if: ${{ matrix.useTranspiler }}
+      run: |
+        echo "USE_TRANSPILER=1" >> ${GITHUB_ENV}
+
+    - name: Add oneAPI to apt
       if: ${{ matrix.useoneAPI }}
       shell: bash
       run: |
@@ -94,7 +109,7 @@ jobs:
         rm GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
         sudo add-apt-repository "deb https://apt.repos.intel.com/oneapi all main"
       
-    - name: install oneAPI dpcpp compiler
+    - name: Install oneAPI dpcpp compiler
       if: ${{ matrix.useoneAPI }}
       shell: bash
       run: |
@@ -102,59 +117,78 @@ jobs:
         sudo apt install intel-oneapi-compiler-dpcpp-cpp
         sudo apt install intel-oneapi-compiler-fortran
 
-    - name: Compiler info
+    - name: Install clang compiler required for transpiler
+      if: ${{ matrix.useTranspiler }}
+      shell: bash
+      run: |
+        wget https://raw.githubusercontent.com/opencollab/llvm-jenkins.debian.net/master/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 17 all
+
+    - name: Cache transpiler install directory
+      if: ${{ matrix.useTranspiler }}
+      uses: actions/cache@v3
+      id: cache
+      with:
+        path: occa-transpiler-${{ env.TRANSPILER_VERSION }}/install
+        key:  transpiler-${{ runner.os }}-${{ env.CXX }}-${{ env.CC }}-${{ hashFiles('.github/workflows/build.yml') }}-${{ env.TRANSPILER_CACHE_NUMBER }}
+
+    - name: Download and build clang transpiler
+      if: ${{ matrix.useTranspiler && (steps.cache.outputs.cache-hit != 'true' ) }}
+      shell: bash
+      run: |
+        wget https://github.com/libocca/occa-transpiler/releases/download/v${TRANSPILER_VERSION}/occa-transpiler-${TRANSPILER_VERSION}-including-submodules.tar.gz
+        tar -zxvf occa-transpiler-${TRANSPILER_VERSION}-including-submodules.tar.gz
+        cd occa-transpiler-${TRANSPILER_VERSION}
+        mkdir -p build
+        cmake -S . -B build -DCMAKE_INSTALL_PREFIX=install -DCMAKE_CXX_FLAGS="-Wall"
+        cmake --build build --target install --parallel 8
+
+    - name: Compile library with CMake
+      if: ${{ matrix.useCMake }}
+      run: |
+        if [ ! -z ${USE_ONEAPI+x} ] && [ "${USE_ONEAPI}" -eq 1 ]; then
+          source /opt/intel/oneapi/setvars.sh
+        fi
+
+        cmake -S . -B build \
+        -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
+        -DCMAKE_INSTALL_PREFIX=install \
+        -DCMAKE_C_COMPILER=${CC} \
+        -DCMAKE_CXX_COMPILER=${CXX} \
+        -DCMAKE_Fortran_COMPILER=${FC} \
+        -DOCCA_ENABLE_TESTS=ON \
+        -DOCCA_ENABLE_EXAMPLES=ON \
+        -DOCCA_CLANG_BASED_TRANSPILER=${USE_TRANSPILER} \
+        -DCMAKE_PREFIX_PATH=occa-transpiler-${TRANSPILER_VERSION}/install/ \
+        -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED}
+
+        cmake --build build --parallel 16
+
+    - name: Run CTests
+      if: ${{ matrix.useCMake}}
+      env:
+        OCCA_DPCPP_COMPILER: icpx
+      run: |
+        if [ ! -z ${USE_ONEAPI+x} ] && [ "${USE_ONEAPI}" -eq 1 ]; then
+          source /opt/intel/oneapi/setvars.sh
+          export ONEAPI_DEVICE_SELECTOR=*:cpu
+          exclude_list="opencl-*|dpcpp-*"
+        else
+          exclude_list="examples_cpp_arrays-opencl|examples_cpp_for_loops-opencl|examples_cpp_generic_inline_kernel-opencl|examples_cpp_shared_memory-opencl|examples_cpp_nonblocking_streams-opencl|examples_cpp_for_loops-dpcpp|examples_cpp_arrays-dpcpp|examples_cpp_generic_inline_kernel-dpcpp|examples_cpp_nonblocking_streams-dpcpp"
+        fi
+
+        ctest --test-dir build --progress --output-on-failure --parallel 8 --schedule-random -E ${exclude_list}
+
+    - name: Print compiler info for GNU Make
       if: ${{ !matrix.useCMake }}
       run: make -j 16 info
 
-    - name: CMake configure
-      if: ${{ matrix.useCMake && !matrix.useoneAPI}}
-      run: |
-        cmake -S . -B build \
-        -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
-        -DCMAKE_INSTALL_PREFIX=install \
-        -DCMAKE_C_COMPILER=${CC} \
-        -DCMAKE_CXX_COMPILER=${CXX} \
-        -DCMAKE_Fortran_COMPILER=${FC} \
-        -DOCCA_ENABLE_TESTS=ON \
-        -DOCCA_ENABLE_EXAMPLES=ON \
-        -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED}
-
-    - name: CMake configure
-      if: ${{ matrix.useCMake && matrix.useoneAPI}}
-      env:
-        OCCA_CC: ${{ matrix.CC }}
-        OCCA_CXX: ${{ matrix.CXX }}
-      run: |
-        source /opt/intel/oneapi/setvars.sh
-        cmake -S . -B build \
-        -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
-        -DCMAKE_INSTALL_PREFIX=install \
-        -DCMAKE_C_COMPILER=${CC} \
-        -DCMAKE_CXX_COMPILER=${CXX} \
-        -DCMAKE_Fortran_COMPILER=${FC} \
-        -DOCCA_ENABLE_TESTS=ON \
-        -DOCCA_ENABLE_EXAMPLES=ON \
-        -DOCCA_ENABLE_FORTRAN=${OCCA_FORTRAN_ENABLED}
-    
-    - name: CMake build
-      if: ${{ matrix.useCMake && !matrix.useoneAPI}}
-      run: |
-        cmake --build build --parallel 16
-
-    - name: CMake build
-      if: ${{ matrix.useCMake && matrix.useoneAPI}}
-      env:
-        OCCA_CC: ${{ matrix.CC }}
-        OCCA_CXX: ${{ matrix.CXX }}
-      run: |
-        source /opt/intel/oneapi/setvars.sh
-        cmake --build build --parallel 16
-
-    - name: Compile library
+    - name: Compile library with GNU Make
       if: ${{ !matrix.useCMake }}
       run: make -j 16
 
-    - name: Compile tests
+    - name: Compile tests with GNU Make
       if: ${{ !matrix.useCMake }}
       run: make -j 16 tests
 
@@ -165,22 +199,6 @@ jobs:
     - name: Run examples
       if: ${{ !matrix.useCMake }}
       run: ./tests/run_examples
-
-    - name: Run CTests
-      if: ${{ matrix.useCMake && !matrix.useoneAPI }}
-      run: |
-        ctest --test-dir build --progress --output-on-failure --parallel 8 --schedule-random -E "examples_cpp_arrays-opencl|examples_cpp_for_loops-opencl|examples_cpp_generic_inline_kernel-opencl|examples_cpp_shared_memory-opencl|examples_cpp_nonblocking_streams-opencl|examples_cpp_for_loops-dpcpp|examples_cpp_arrays-dpcpp|examples_cpp_generic_inline_kernel-dpcpp|examples_cpp_nonblocking_streams-dpcpp"
-
-    - name: Run CTests
-      if: ${{ matrix.useCMake && matrix.useoneAPI }}
-      env:
-        OCCA_CC: ${{ matrix.CC }}
-        OCCA_CXX: ${{ matrix.CXX }}
-        OCCA_DPCPP_COMPILER: icpx
-      run: |
-        source /opt/intel/oneapi/setvars.sh
-        export ONEAPI_DEVICE_SELECTOR=*:cpu
-        ctest --test-dir build --progress --output-on-failure --parallel 8 --schedule-random -E "opencl-*|dpcpp-*"
 
     - name: Upload code coverage
       if: ${{ matrix.OCCA_COVERAGE }}
